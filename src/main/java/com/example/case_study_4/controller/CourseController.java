@@ -5,6 +5,7 @@ import com.example.case_study_4.dto.request.StudentDto;
 import com.example.case_study_4.dto.response.ApiResponse;
 import com.example.case_study_4.repository.CourseRepository;
 import com.example.case_study_4.service.ICourseService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,11 +13,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/api/course")
 public class CourseController {
     @Autowired
     private ICourseService service;
+
+    @Autowired
+    private HttpServletRequest request;
+
+    private Locale getLocale() {
+        return request.getHeader("Accept-Language") != null ?
+                Locale.forLanguageTag(request.getHeader("Accept-Language")) : Locale.getDefault();
+    }
 
     @GetMapping()
     public ApiResponse<Page<CourseDto>> getAllStudentsPageable(
@@ -24,34 +35,43 @@ public class CourseController {
             @RequestParam(value = "page", defaultValue = "0") Integer page) {
 
         Pageable pageable = PageRequest.of(page, size);
-        return service.getAllPageable(pageable, size, page);
+        Locale locale = getLocale();
+        return service.getAllPageable(pageable, size, page, locale);
     }
 
     @PostMapping()
-    ApiResponse<CourseDto> create(@RequestBody @Valid CourseDto courseDto){
-        return service.create(courseDto);
+    public ApiResponse<CourseDto> create(@RequestBody @Valid CourseDto courseDto) {
+        Locale locale = getLocale();
+        return service.create(courseDto, locale);
     }
 
     @GetMapping("/findById/{id}")
-    ApiResponse<CourseDto> findById(@PathVariable Long id){
-        return service.findById(id);
+    public ApiResponse<CourseDto> findById(@PathVariable Long id) {
+        Locale locale = getLocale();
+        return service.findById(id, locale);
     }
 
     @PutMapping("/update/{id}")
-    ApiResponse<CourseDto> update(@RequestBody @Valid CourseDto courseDto, @PathVariable Long id){
-        return service.update(id, courseDto);
+    public ApiResponse<CourseDto> update(@RequestBody @Valid CourseDto courseDto, @PathVariable Long id) {
+        Locale locale = getLocale();
+        return service.update(id, courseDto, locale);
     }
-    @DeleteMapping("delete/{id}")
+
+    @DeleteMapping("/delete/{id}")
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
-        return service.delete(id);
+        Locale locale = getLocale();
+        return service.delete(id, locale);
     }
 
     @PostMapping("/xoa-mem/{id}")
-    public ApiResponse<CourseDto> deleteMem(@PathVariable Long id){
-        return service.deleteMem(id);
+    public ApiResponse<CourseDto> deleteMem(@PathVariable Long id) {
+        Locale locale = getLocale();
+        return service.deleteMem(id, locale);
     }
+
     @PostMapping("/open/{id}")
-    public ApiResponse<CourseDto> open(@PathVariable Long id){
-        return service.open(id);
+    public ApiResponse<CourseDto> open(@PathVariable Long id) {
+        Locale locale = getLocale();
+        return service.open(id, locale);
     }
 }

@@ -13,124 +13,125 @@ import com.example.case_study_4.exception.ErrorCode;
 import com.example.case_study_4.repository.CourseRepository;
 import com.example.case_study_4.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 @Service
 public class CourseService implements ICourseService {
+    @Autowired
+    private MessageSource messageSource;
 
     @Autowired
     private CourseRepository courseRepository;
 
     @Override
-    public ApiResponse<Page<CourseDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage) {
+    public ApiResponse<Page<CourseDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage, Locale locale) {
         Pageable pageableRequest = PageRequest.of(currentPage, size);
         Page<Course> coursePage = courseRepository.findAll(pageableRequest);
         Page<CourseDto> courseDtoPage = coursePage.map(CourseMapper.INSTANCE::toDto);
         ApiResponse<Page<CourseDto>> apiResponse = new ApiResponse<>();
 
         if (courseDtoPage != null){
-            apiResponse.setMessage("Lấy danh sách khóa học thành công");
+            apiResponse.setMessage(messageSource.getMessage("success.getAllCourses", null, locale));
             apiResponse.setResult(courseDtoPage);
-        }else {
+        } else {
             throw new AppException(ErrorCode.LIST_STUDENT_NOT_FOUND);
         }
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<CourseDto> create(CourseDto courseDto) {
+    public ApiResponse<CourseDto> create(CourseDto courseDto, Locale locale) {
         Course course = CourseMapper.INSTANCE.toEntity(courseDto);
         course = courseRepository.save(course);
         CourseDto savedCourseDto = CourseMapper.INSTANCE.toDto(course);
         ApiResponse<CourseDto> response = new ApiResponse<>();
 
-        response.setMessage("Created");
+        response.setMessage(messageSource.getMessage("success.create.course", null, locale));
         response.setResult(savedCourseDto);
 
         return response;
     }
 
     @Override
-    public ApiResponse<CourseDto> findById(Long id) {
-        Course course = courseRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+    public ApiResponse<CourseDto> findById(Long id, Locale locale) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
         CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
         ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("Lấy course thành công");
+        apiResponse.setMessage(messageSource.getMessage("success.getCourse", null, locale));
         apiResponse.setResult(courseDto);
 
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<CourseDto> update(Long id, CourseDto courseDto) {
-        Course course = courseRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+    public ApiResponse<CourseDto> update(Long id, CourseDto courseDto, Locale locale) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
         course.setId(id);
         course = CourseMapper.INSTANCE.toEntity(courseDto);
         courseRepository.save(course);
 
         CourseDto courseDto1 = CourseMapper.INSTANCE.toDto(course);
         ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("update thành công");
+        apiResponse.setMessage(messageSource.getMessage("success.update", null, locale));
         apiResponse.setResult(courseDto1);
 
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<Boolean> delete(Long id) {
+    public ApiResponse<Boolean> delete(Long id, Locale locale) {
         ApiResponse<Boolean> response = new ApiResponse<>();
         if (courseRepository.existsById(id)) {
+            courseRepository.deleteByCourseId(id);
             courseRepository.deleteById(id);
-            response.setMessage("Xóa thành công");
+            response.setMessage(messageSource.getMessage("success.delete", null, locale));
             response.setResult(true);
         } else {
-            response.setMessage("Không tìm thấy course");
-            response.setResult(false);
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
         return response;
     }
 
-    public ApiResponse<CourseDto> deleteMem(Long id) {
-        ApiResponse apiResponse = new ApiResponse<>();
-        Course course = courseRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+    @Override
+    public ApiResponse<CourseDto> deleteMem(Long id, Locale locale) {
+        ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
         if (course.getStatus() == 1){
             course.setStatus(0);
-            course.setId(id);
             courseRepository.save(course);
             CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
-            if (courseDto != null){
-                apiResponse.setMessage("Xoa thành công");
-                apiResponse.setResult(courseDto);
-            }else {
-                throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
-            }
-        }else {
-            apiResponse.setMessage("Học sinh này không tồn tại");
+            apiResponse.setMessage(messageSource.getMessage("success.soft.delete", null, locale));
+            apiResponse.setResult(courseDto);
+        } else {
+            throw new AppException(ErrorCode.ALREADY_DELETED);
         }
         return apiResponse;
     }
 
-    public ApiResponse<CourseDto> open(Long id) {
-        ApiResponse apiResponse = new ApiResponse<>();
-        Course course = courseRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+    @Override
+    public ApiResponse<CourseDto> open(Long id, Locale locale) {
+        ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
         if (course.getStatus() == 0){
             course.setStatus(1);
-            course.setId(id);
             courseRepository.save(course);
             CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
-            if (courseDto != null){
-                apiResponse.setMessage("Mở thành công");
-                apiResponse.setResult(courseDto);
-            }else {
-                throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
-            }
-        }else {
-            apiResponse.setMessage("Học sinh này không tồn tại");
+            apiResponse.setMessage(messageSource.getMessage("success.reopen", null, locale));
+            apiResponse.setResult(courseDto);
+        } else {
+            throw new AppException(ErrorCode.ALREADY_DELETED);
         }
-
         return apiResponse;
     }
+
 }

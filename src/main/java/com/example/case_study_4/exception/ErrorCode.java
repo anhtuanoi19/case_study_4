@@ -11,7 +11,8 @@ public enum ErrorCode {
     LIST_COURSE_NOT_FOUND(1005, "error.listCourseNotFound", HttpStatus.NOT_FOUND),
     STUDENT_EMAIL_EXISTS(1006, "error.studentEmailExists", HttpStatus.BAD_REQUEST),
     STUDENT_DISCONECT(1007, "error.studentDisconnect", HttpStatus.BAD_REQUEST),
-    ALREADY_DELETED(1008, "error.alreadyDeleted", HttpStatus.BAD_REQUEST);
+    ALREADY_DELETED(1008, "error.alreadyDeleted", HttpStatus.BAD_REQUEST),
+    STUDENT_EXISTS_COURSE(1009, "error.existsCourse", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String messageKey;

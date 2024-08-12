@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentCourseService implements IStudentCourseService {
@@ -69,22 +70,31 @@ public class StudentCourseService implements IStudentCourseService {
     @Override
     public ApiResponse<Page<GetAllDto>> searchByStudentName(String name, int page, int size, Locale locale) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
-
-        List<GetAllDto> dtoList = new ArrayList<>();
-        for (Object[] result : resultsPage.getContent()) {
-            String studentName = (String) result[0];
-            String studentEmail = (String) result[1];
-            String courseTitles = (String) result[2];
-
-            dtoList.add(new GetAllDto(studentName, studentEmail, courseTitles));
-        }
-
-        Page<GetAllDto> dtoPage = new PageImpl<>(dtoList, pageable, resultsPage.getTotalElements());
 
         ApiResponse<Page<GetAllDto>> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(dtoPage);
-        apiResponse.setMessage(messageSource.getMessage("success.search", null, locale));
+        Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
+
+        // Kiểm tra nếu có kết quả tìm kiếm
+        if (resultsPage.hasContent()) {
+            List<GetAllDto> dtoList = new ArrayList<>();
+            for (Object[] result : resultsPage.getContent()) {
+                String studentName = (String) result[0];
+                String studentEmail = (String) result[1];
+                String courseTitles = (String) result[2];
+
+                dtoList.add(new GetAllDto(studentName, studentEmail, courseTitles));
+            }
+
+            Page<GetAllDto> dtoPage = new PageImpl<>(dtoList, pageable, resultsPage.getTotalElements());
+
+            apiResponse.setResult(dtoPage);
+            apiResponse.setMessage(messageSource.getMessage("success.search", null, locale));
+        } else {
+            // Nếu không có kết quả
+            apiResponse.setResult(Page.empty(pageable));
+            apiResponse.setMessage(messageSource.getMessage("error.student.not.found", null, locale));
+        }
+
         return apiResponse;
     }
 
@@ -148,17 +158,24 @@ public class StudentCourseService implements IStudentCourseService {
         student.setStatus(studentDto.getStatus());
         studentRepository.save(student);
 
-        removeCoursesByStudentId(student.getId());
+        Set<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId(student.getId());
+
+        Set<Long> newCourseIds = studentDto.getCourses().stream()
+                .map(CourseDto::getId)
+                .collect(Collectors.toSet());
+
+        Set<Long> removedCourseIds = currentCourseIds.stream()
+                .filter(courseId -> !newCourseIds.contains(courseId))
+                .collect(Collectors.toSet());
+
+        for (Long courseId : removedCourseIds) {
+            studentCourseRepository.updateStatusByStudentIdAndCourseId(student.getId(), courseId, 0);
+        }
 
         Set<StudentCoure> newStudentCoureSet = new HashSet<>();
         for (CourseDto courseDto : studentDto.getCourses()) {
-            Course course;
-            course = courseRepository.findById(courseDto.getId())
+            Course course = courseRepository.findById(courseDto.getId())
                     .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
-            course.setTitle(course.getTitle());
-            course.setDescription(course.getDescription());
-            course.setStatus(courseDto.getStatus());
-            courseRepository.save(course);
 
             StudentCoure studentCoure = studentCourseRepository.findByStudentIdAndCourseId(student.getId(), course.getId())
                     .orElseGet(() -> new StudentCoure());
@@ -166,10 +183,17 @@ public class StudentCourseService implements IStudentCourseService {
             studentCoure.setStudent(student);
             studentCoure.setCourse(course);
             studentCoure.setStatus(studentDto.getStatus());
-            newStudentCoureSet.add(studentCoure);
+
+            if (studentCoure.getId() == null) {
+                newStudentCoureSet.add(studentCoure);
+            } else {
+                studentCourseRepository.save(studentCoure);
+            }
         }
 
-        studentCourseRepository.saveAll(newStudentCoureSet);
+        if (!newStudentCoureSet.isEmpty()) {
+            studentCourseRepository.saveAll(newStudentCoureSet);
+        }
 
         StudentDto studentDto1 = StudentMapper.INSTANCE.toDto(student);
 
@@ -179,23 +203,4 @@ public class StudentCourseService implements IStudentCourseService {
         return apiResponse;
     }
 
-    @Transactional
-    public ApiResponse<StudentCourseDto> xoaMem(Long studentId, Long courseId, Locale locale) {
-        ApiResponse<StudentCourseDto> apiResponse = new ApiResponse<>();
-
-        StudentCoure studentCoure = studentCourseRepository.findByStudentIdAndCourseId(studentId, courseId)
-                .orElseThrow(() -> new AppException(ErrorCode.ALREADY_DELETED));
-
-        if (studentCoure.getStatus() == 1) {
-            studentCoure.setStatus(0);
-            studentCourseRepository.save(studentCoure);
-
-            apiResponse.setResult(StudenCourseMapper.INSTANCE.toDto(studentCoure));
-            apiResponse.setMessage(messageSource.getMessage("success.soft.delete", null, locale));
-        } else {
-            throw new AppException(ErrorCode.ALREADY_DELETED);
-        }
-
-        return apiResponse;
-    }
 }

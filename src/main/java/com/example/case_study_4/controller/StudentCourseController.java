@@ -26,6 +26,8 @@ public class StudentCourseController {
     @Autowired
     private MessageSource messageSource;
 
+
+    //Select native
     @GetMapping("/all")
     public ApiResponse<Page<GetAllDto>> getAllStudentsCourses(
             @RequestParam(defaultValue = "0") int page,
@@ -36,6 +38,7 @@ public class StudentCourseController {
         return studentCourseService.getAll(page, size, locale);
     }
 
+    //search native
     @PostMapping("/search")
     public ApiResponse<Page<GetAllDto>> search(
             @RequestParam(required = false) String name,
@@ -47,6 +50,7 @@ public class StudentCourseController {
         return studentCourseService.searchByStudentName(name, page, size, locale);
     }
 
+    //create 1-n n-n 1-1
     @PostMapping("/create-all")
     public ApiResponse<StudentCourseDto> createAll(@RequestBody @Valid StudentCourseDto studentCourseDto, WebRequest request) {
         Locale locale = request.getHeader("Accept-Language") != null ?
@@ -54,6 +58,7 @@ public class StudentCourseController {
         return studentCourseService.createAll(studentCourseDto, locale);
     }
 
+    //update student, soft-delete
     @PutMapping("/update")
     public ApiResponse<StudentDto> updateStudent(@RequestBody @Valid StudentDto studentDto, WebRequest request) {
         Locale locale = request.getHeader("Accept-Language") != null ?
@@ -61,14 +66,5 @@ public class StudentCourseController {
         return studentCourseService.updateStudent(studentDto, locale);
     }
 
-    @DeleteMapping("/soft-delete")
-    public ApiResponse<StudentCourseDto> softDeleteStudentCourse(
-            @RequestParam("studentId") Long studentId,
-            @RequestParam("courseId") Long courseId,
-            WebRequest request) {
-        Locale locale = request.getHeader("Accept-Language") != null ?
-                Locale.forLanguageTag(request.getHeader("Accept-Language")) : Locale.getDefault();
-        return studentCourseService.xoaMem(studentId, courseId, locale);
-    }
 
 }

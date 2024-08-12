@@ -1,6 +1,7 @@
 package com.example.case_study_4.dto.request;
 
 import com.example.case_study_4.entity.StudentCoure;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourseDto {
 
     private Long id;

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface StudentCourseRepository extends JpaRepository<StudentCoure, Long> {
@@ -58,6 +59,13 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
 
         Optional<StudentCoure> findByStudentId(Long studentId);
         boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
+
+        @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
+        Set<Long> findCourseIdsByStudentId(@Param("studentId") Long studentId);
+
+        @Modifying
+        @Query("UPDATE StudentCoure sc SET sc.status = :status WHERE sc.student.id = :studentId AND sc.course.id = :courseId")
+        void updateStatusByStudentIdAndCourseId(@Param("studentId") Long studentId, @Param("courseId") Long courseId, @Param("status") int status);
 
 
 

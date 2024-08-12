@@ -19,5 +19,4 @@ public interface IStudentCourseService {
 
     ApiResponse<StudentCourseDto> createAll(StudentCourseDto studentCourseDto, Locale locale);
     ApiResponse<StudentDto> updateStudent(StudentDto studentDto, Locale locale);
-    ApiResponse<StudentCourseDto> xoaMem(Long studentId, Long courseId, Locale locale);
 }

@@ -11,10 +11,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
     Page<Student> findAll(Pageable pageable);
+
     @Query("SELECT s FROM Student s LEFT JOIN FETCH s.studentCourses sc LEFT JOIN FETCH sc.course")
     Page<Student> findAllWithCourses(Pageable pageable);
     boolean existsByEmail(String email);
@@ -23,4 +25,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Transactional
     @Query("DELETE FROM StudentCoure sc WHERE sc.student.id = :studentId")
     void deleteByStudentId(@Param("studentId") Long studentId);
+
+
 }
