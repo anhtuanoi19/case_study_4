@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public interface IStudentService {
@@ -17,7 +18,7 @@ public interface IStudentService {
     ApiResponse<Boolean> delete(Long id);
     ApiResponse<StudentDto> open(Long id);
     ApiResponse<StudentDto> deleteMem(Long id);
-    ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size);
+    ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size, Locale locale);
     ApiResponse<Void> deleteStudent(Long studentId);
 
 }

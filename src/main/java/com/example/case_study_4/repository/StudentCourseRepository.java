@@ -50,19 +50,8 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
         Page<Object[]> searchByStudentName(String name, Pageable pageable);
 
 
-        @Modifying
-        @Query("DELETE FROM StudentCoure sc WHERE sc.student.id = :studentId")
-        void deleteByStudentId(Long studentId);
-
         @Query("SELECT sc FROM StudentCoure sc WHERE sc.student.id = :studentId AND sc.course.id = :courseId")
         Optional<StudentCoure> findByStudentIdAndCourseId(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
-
-        Optional<StudentCoure> findByStudentId(Long studentId);
-
-        boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
-
-        @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
-        Set<Long> findCourseIdsByStudentId(@Param("studentId") Long studentId);
 
         @Modifying
         @Query("UPDATE StudentCoure sc SET sc.status = 0 WHERE sc.student.id = :studentId AND sc.course.id IN :courseIds")

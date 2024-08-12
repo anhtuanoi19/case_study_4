@@ -11,6 +11,7 @@ import com.example.case_study_4.exception.ErrorCode;
 import com.example.case_study_4.repository.StudentRepository;
 import com.example.case_study_4.service.IStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +27,9 @@ public class StudentService implements IStudentService {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Override
     public ApiResponse<Page<StudentDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage) {
@@ -138,29 +143,24 @@ public class StudentService implements IStudentService {
 
     //select 1-n
     @Transactional
-    public ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size) {
+    @Override
+    public ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size, Locale locale) {
         ApiResponse<Page<StudentDto>> apiResponse = new ApiResponse<>();
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Student> studentPage = studentRepository.findAllWithCourses(pageable);
 
         Page<StudentDto> studentDetailDtos = studentPage.map(student -> {
-            StudentDto studentDetailDto = new StudentDto();
-            studentDetailDto.setId(student.getId());
-            studentDetailDto.setName(student.getName());
-            studentDetailDto.setEmail(student.getEmail());
-            studentDetailDto.setStatus(student.getStatus());
-
+            StudentDto studentDetailDto = StudentMapper.INSTANCE.toDto(student);
             List<CourseDto> courseDtos = student.getStudentCourses().stream()
                     .map(sc -> CourseMapper.INSTANCE.toDto(sc.getCourse()))
                     .collect(Collectors.toList());
             studentDetailDto.setCourses(courseDtos);
-
             return studentDetailDto;
         });
 
         apiResponse.setResult(studentDetailDtos);
-        apiResponse.setMessage("Lấy danh sách học sinh thành công");
+        apiResponse.setMessage(messageSource.getMessage("success.getAllStudentsWithCourses", null, locale));
         return apiResponse;
     }
 
