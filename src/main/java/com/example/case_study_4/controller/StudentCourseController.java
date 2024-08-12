@@ -3,6 +3,7 @@ package com.example.case_study_4.controller;
 import com.example.case_study_4.dto.request.GetAllDto;
 import com.example.case_study_4.dto.request.StudentCourseDto;
 import com.example.case_study_4.dto.request.StudentDto;
+import com.example.case_study_4.dto.request.UpdateStudentCourseDto;
 import com.example.case_study_4.dto.response.ApiResponse;
 import com.example.case_study_4.service.IStudentCourseService;
 import jakarta.validation.Valid;
@@ -58,13 +59,13 @@ public class StudentCourseController {
         return studentCourseService.createAll(studentCourseDto, locale);
     }
 
-    //update student, soft-delete
+
     @PutMapping("/update")
-    public ApiResponse<StudentDto> updateStudent(@RequestBody @Valid StudentDto studentDto, WebRequest request) {
+    public ApiResponse<StudentDto> updateStudentAndCourses(
+            @RequestBody @Valid UpdateStudentCourseDto updateStudentCourseDto, WebRequest request ){
         Locale locale = request.getHeader("Accept-Language") != null ?
                 Locale.forLanguageTag(request.getHeader("Accept-Language")) : Locale.getDefault();
-        return studentCourseService.updateStudent(studentDto, locale);
+        return studentCourseService.updateStudentAndCourses(updateStudentCourseDto, locale);
     }
-
 
 }

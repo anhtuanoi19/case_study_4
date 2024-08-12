@@ -1,12 +1,8 @@
 package com.example.case_study_4.service.Impl;
 
 import com.example.case_study_4.Mapper.CourseMapper;
-import com.example.case_study_4.Mapper.StudenCourseMapper;
 import com.example.case_study_4.Mapper.StudentMapper;
-import com.example.case_study_4.dto.request.CourseDto;
-import com.example.case_study_4.dto.request.GetAllDto;
-import com.example.case_study_4.dto.request.StudentCourseDto;
-import com.example.case_study_4.dto.request.StudentDto;
+import com.example.case_study_4.dto.request.*;
 import com.example.case_study_4.dto.response.ApiResponse;
 import com.example.case_study_4.entity.Course;
 import com.example.case_study_4.entity.Student;
@@ -74,7 +70,6 @@ public class StudentCourseService implements IStudentCourseService {
         ApiResponse<Page<GetAllDto>> apiResponse = new ApiResponse<>();
         Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
 
-        // Kiểm tra nếu có kết quả tìm kiếm
         if (resultsPage.hasContent()) {
             List<GetAllDto> dtoList = new ArrayList<>();
             for (Object[] result : resultsPage.getContent()) {
@@ -90,8 +85,6 @@ public class StudentCourseService implements IStudentCourseService {
             apiResponse.setResult(dtoPage);
             apiResponse.setMessage(messageSource.getMessage("success.search", null, locale));
         } else {
-            // Nếu không có kết quả
-            apiResponse.setResult(Page.empty(pageable));
             apiResponse.setMessage(messageSource.getMessage("error.student.not.found", null, locale));
         }
 
@@ -144,63 +137,48 @@ public class StudentCourseService implements IStudentCourseService {
     }
 
     @Transactional
-    public void removeCoursesByStudentId(Long studentId) {
-        studentCourseRepository.deleteByStudentId(studentId);
-    }
-
-    @Transactional
-    public ApiResponse<StudentDto> updateStudent(StudentDto studentDto, Locale locale) {
-        Student student = studentRepository.findById(studentDto.getId())
+    public ApiResponse<StudentDto> updateStudentAndCourses(UpdateStudentCourseDto dto, Locale locale) {
+        Student student = studentRepository.findById(dto.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-
-        student.setName(studentDto.getName());
-        student.setEmail(studentDto.getEmail());
-        student.setStatus(studentDto.getStatus());
+        student.setName(dto.getName());
+        student.setEmail(dto.getEmail());
+        student.setStatus(dto.getStatus());
         studentRepository.save(student);
 
-        Set<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId(student.getId());
+        List<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId1(student.getId());
 
-        Set<Long> newCourseIds = studentDto.getCourses().stream()
-                .map(CourseDto::getId)
+        Set<Long> newCourseIds = new HashSet<>(dto.getCourseIds());
+        Set<Long> coursesToDeactivate = currentCourseIds.stream()
+                .filter(id -> !newCourseIds.contains(id))
                 .collect(Collectors.toSet());
 
-        Set<Long> removedCourseIds = currentCourseIds.stream()
-                .filter(courseId -> !newCourseIds.contains(courseId))
+        if (!coursesToDeactivate.isEmpty()) {
+            studentCourseRepository.updateStatusByStudentIdAndCourseIds(student.getId(), coursesToDeactivate);
+        }
+
+        List<Course> courses = courseRepository.findAllByIds(dto.getCourseIds());
+
+        Set<StudentCoure> newStudentCourses = courses.stream()
+                .map(course -> {
+                    StudentCoure studentCourse = studentCourseRepository.findByStudentIdAndCourseId(student.getId(), course.getId())
+                            .orElseGet(() -> new StudentCoure());
+                    studentCourse.setStudent(student);
+                    studentCourse.setCourse(course);
+                    studentCourse.setStatus(dto.getStatus());
+                    return studentCourse;
+                })
                 .collect(Collectors.toSet());
 
-        for (Long courseId : removedCourseIds) {
-            studentCourseRepository.updateStatusByStudentIdAndCourseId(student.getId(), courseId, 0);
-        }
+        studentCourseRepository.saveAll(newStudentCourses);
 
-        Set<StudentCoure> newStudentCoureSet = new HashSet<>();
-        for (CourseDto courseDto : studentDto.getCourses()) {
-            Course course = courseRepository.findById(courseDto.getId())
-                    .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
+        StudentDto updatedStudentDto = StudentMapper.INSTANCE.toDto(student);
+        ApiResponse<StudentDto> response = new ApiResponse<>();
+        response.setResult(updatedStudentDto);
+        response.setMessage(messageSource.getMessage("success.update", null, locale));
 
-            StudentCoure studentCoure = studentCourseRepository.findByStudentIdAndCourseId(student.getId(), course.getId())
-                    .orElseGet(() -> new StudentCoure());
-
-            studentCoure.setStudent(student);
-            studentCoure.setCourse(course);
-            studentCoure.setStatus(studentDto.getStatus());
-
-            if (studentCoure.getId() == null) {
-                newStudentCoureSet.add(studentCoure);
-            } else {
-                studentCourseRepository.save(studentCoure);
-            }
-        }
-
-        if (!newStudentCoureSet.isEmpty()) {
-            studentCourseRepository.saveAll(newStudentCoureSet);
-        }
-
-        StudentDto studentDto1 = StudentMapper.INSTANCE.toDto(student);
-
-        ApiResponse<StudentDto> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(studentDto1);
-        apiResponse.setMessage(messageSource.getMessage("success.update", null, locale));
-        return apiResponse;
+        return response;
     }
+
+
 
 }

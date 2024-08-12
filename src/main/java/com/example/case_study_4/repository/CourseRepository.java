@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Page<Course> findAll(Pageable pageable);
@@ -19,4 +21,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Transactional
     @Query("DELETE FROM StudentCoure sc WHERE sc.course.id = :courseId")
     void deleteByCourseId(@Param("courseId") Long courseId);
+
+    @Query("SELECT c FROM Course c WHERE c.id IN :courseIds")
+    List<Course> findAllByIds(@Param("courseIds") List<Long> courseIds);
 }

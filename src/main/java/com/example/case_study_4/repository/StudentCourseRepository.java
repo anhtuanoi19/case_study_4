@@ -58,16 +58,18 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
         Optional<StudentCoure> findByStudentIdAndCourseId(@Param("studentId") Long studentId, @Param("courseId") Long courseId);
 
         Optional<StudentCoure> findByStudentId(Long studentId);
+
         boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
 
         @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
         Set<Long> findCourseIdsByStudentId(@Param("studentId") Long studentId);
 
         @Modifying
-        @Query("UPDATE StudentCoure sc SET sc.status = :status WHERE sc.student.id = :studentId AND sc.course.id = :courseId")
-        void updateStatusByStudentIdAndCourseId(@Param("studentId") Long studentId, @Param("courseId") Long courseId, @Param("status") int status);
+        @Query("UPDATE StudentCoure sc SET sc.status = 0 WHERE sc.student.id = :studentId AND sc.course.id IN :courseIds")
+        void updateStatusByStudentIdAndCourseIds(@Param("studentId") Long studentId, @Param("courseIds") Set<Long> courseIds);
 
-
+        @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
+        List<Long> findCourseIdsByStudentId1(@Param("studentId") Long studentId);
 
 }
 

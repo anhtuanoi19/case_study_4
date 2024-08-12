@@ -3,13 +3,11 @@ package com.example.case_study_4.dto.request;
 import com.example.case_study_4.entity.StudentCoure;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -23,6 +21,5 @@ public class CourseDto {
     private String description;
     private Integer status;
     private List<@Valid StudentDto> students;
-
 
 }

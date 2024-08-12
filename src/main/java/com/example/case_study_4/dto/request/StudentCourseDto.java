@@ -17,13 +17,12 @@ import java.util.List;
 public class StudentCourseDto {
 
     private Long id;
-
     @NotEmpty(message = "Danh sách sinh viên không được để trống")
     @Valid
     private List<StudentDto> studentDtoList;
 
     @NotEmpty(message = "Danh sách khóa học không được để trống")
     @Valid
-    private List<CourseDto> courseDtoList;
+    private List<@Valid CourseDto> courseDtoList;
     private Integer status;
 }
