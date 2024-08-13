@@ -1,6 +1,9 @@
 package com.example.case_study_4.dto.request;
 
+import com.example.case_study_4.entity.Course;
+import com.example.case_study_4.entity.Student;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -17,11 +20,9 @@ import java.util.List;
 public class StudentCourseDto {
 
     private Long id;
-    @NotEmpty(message = "Danh sách sinh viên không được để trống")
     @Valid
-    private List<@Valid StudentDto> studentDtoList;
-
+    private Student student;
     @Valid
-    private List<@Valid CourseDto> courseDtoList;
+    private Course course;
     private Integer status;
 }

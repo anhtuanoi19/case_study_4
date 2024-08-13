@@ -11,6 +11,6 @@ import java.util.List;
 @Mapper(uses = {StudentMapper.class, CourseMapper.class})
 public interface StudenCourseMapper {
     StudenCourseMapper INSTANCE = Mappers.getMapper(StudenCourseMapper.class);
-     StudentCourseDto toDto(StudentCoure studentCoure);
-     StudentCoure toEntity(StudentCourseDto studentCourseDto);
+    StudentCourseDto toDto(StudentCoure studentCoure);
+    StudentCoure toEntity(StudentCourseDto studentCourseDto);
 }

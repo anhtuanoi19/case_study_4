@@ -18,6 +18,7 @@ public class CourseDto {
     @NotBlank(message = "Tiêu đề không được để trống")
     @Size(min = 3, max = 100, message = "Tiêu đề phải từ 3 đến 100 ký tự")
     private String title;
+    @Size(max = 255, message = "error.size")
     private String description;
     private Integer status;
     private List<@Valid StudentDto> students;

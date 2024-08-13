@@ -10,11 +10,8 @@ import java.util.List;
 @Mapper
 public interface CourseMapper {
     CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "students", ignore = true)
+
     CourseDto toDto(Course course);
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "studentCourses", ignore = true)
     Course toEntity(CourseDto courseDto);
     List<CourseDto> toListDto(List<Course> courseList);
     List<Course> toListEntity(List<CourseDto> courseList);

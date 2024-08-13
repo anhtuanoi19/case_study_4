@@ -16,6 +16,7 @@ import com.example.case_study_4.repository.StudentCourseRepository;
 import com.example.case_study_4.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +39,9 @@ public class CourseService implements ICourseService {
     private StudentCourseRepository studentCourseRepository;
 
     @Override
-    public ApiResponse<Page<CourseDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage, Locale locale) {
+    public ApiResponse<Page<CourseDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         Pageable pageableRequest = PageRequest.of(currentPage, size);
         Page<Course> coursePage = courseRepository.findAll(pageableRequest);
         Page<CourseDto> courseDtoPage = coursePage.map(CourseMapper.INSTANCE::toDto);
@@ -54,7 +57,9 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<CourseDto> create(CourseDto courseDto, Locale locale) {
+    public ApiResponse<CourseDto> create(CourseDto courseDto) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         Course course = CourseMapper.INSTANCE.toEntity(courseDto);
         course = courseRepository.save(course);
         CourseDto savedCourseDto = CourseMapper.INSTANCE.toDto(course);
@@ -67,7 +72,9 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<CourseDto> findById(Long id, Locale locale) {
+    public ApiResponse<CourseDto> findById(Long id) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
         CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
@@ -79,7 +86,9 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<CourseDto> update(Long id, CourseDto courseDto, Locale locale) {
+    public ApiResponse<CourseDto> update(Long id, CourseDto courseDto) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
         course.setId(id);
@@ -95,7 +104,9 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<Boolean> delete(Long id, Locale locale) {
+    public ApiResponse<Boolean> delete(Long id) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         ApiResponse<Boolean> response = new ApiResponse<>();
         if (courseRepository.existsById(id)) {
             courseRepository.deleteByCourseId(id);
@@ -110,7 +121,9 @@ public class CourseService implements ICourseService {
 
     @Override
     @Transactional
-    public ApiResponse<Boolean> deleteMem(Long courseId, Locale locale) {
+    public ApiResponse<Boolean> deleteMem(Long courseId) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         ApiResponse<Boolean> response = new ApiResponse<>();
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
@@ -135,7 +148,9 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<CourseDto> open(Long id, Locale locale) {
+    public ApiResponse<CourseDto> open(Long id) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
@@ -152,7 +167,8 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<Page<CourseDto>> findByTitle(String title, Locale locale, int page, int size) {
+    public ApiResponse<Page<CourseDto>> findByTitle(String title, int page, int size) {
+        Locale locale = LocaleContextHolder.getLocale();
         Pageable pageable = PageRequest.of(page, size);
         Page<Course> coursePage = courseRepository.searchByTitle(title, pageable);
 
@@ -168,5 +184,7 @@ public class CourseService implements ICourseService {
 
         return apiResponse;
     }
+
+
 
 }

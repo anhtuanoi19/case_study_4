@@ -15,6 +15,7 @@ import com.example.case_study_4.repository.StudentRepository;
 import com.example.case_study_4.service.IStudentCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -32,17 +33,12 @@ public class StudentCourseService implements IStudentCourseService {
     private MessageSource messageSource;
 
     @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private CourseRepository courseRepository;
-
-    @Autowired
     private StudentCourseRepository studentCourseRepository;
 
     @Override
-    public ApiResponse<Page<GetAllDto>> getAll(int page, int size, Locale locale) {
-        Pageable pageable = PageRequest.of(page, size);
+    public ApiResponse<Page<GetAllDto>> getAll(Pageable pageable) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         Page<Object[]> resultsPage = studentCourseRepository.getAllByConCat(pageable);
         List<GetAllDto> dtoList = new ArrayList<>();
 
@@ -64,8 +60,9 @@ public class StudentCourseService implements IStudentCourseService {
     }
 
     @Override
-    public ApiResponse<Page<GetAllDto>> searchByStudentName(String name, int page, int size, Locale locale) {
-        Pageable pageable = PageRequest.of(page, size);
+    public ApiResponse<Page<GetAllDto>> searchByStudentName(String name, Pageable pageable) {
+        Locale locale = LocaleContextHolder.getLocale();
+
 
         ApiResponse<Page<GetAllDto>> apiResponse = new ApiResponse<>();
         Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
@@ -91,118 +88,7 @@ public class StudentCourseService implements IStudentCourseService {
         return apiResponse;
     }
 
-    @Transactional
-    public ApiResponse<StudentCourseDto> createAll(StudentCourseDto studentCourseDto, Locale locale) {
-        ApiResponse<StudentCourseDto> apiResponse = new ApiResponse<>();
-        Set<StudentCoure> studentCoureSet = new HashSet<>();
 
-        for (StudentDto studentDto : studentCourseDto.getStudentDtoList()) {
-            if (studentRepository.existsByEmail(studentDto.getEmail())) {
-                throw new AppException(ErrorCode.STUDENT_EMAIL_EXISTS);
-            }
-            Student student;
-            if (studentDto.getId() != null) {
-                student = studentRepository.findById(studentDto.getId())
-                        .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-            } else {
-                student = StudentMapper.INSTANCE.toEntity(studentDto);
-                student = studentRepository.save(student);
-            }
-
-            for (CourseDto courseDto : studentCourseDto.getCourseDtoList()) {
-                Course course;
-                if (courseDto.getId() != null) {
-                    course = courseRepository.findById(courseDto.getId())
-                            .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
-                } else {
-                    course = CourseMapper.INSTANCE.toEntity(courseDto);
-                    course = courseRepository.save(course);
-                }
-
-                StudentCoure studentCoure = new StudentCoure();
-                studentCoure.setStudent(student);
-                studentCoure.setCourse(course);
-                studentCoure.setStatus(1);
-                studentCoureSet.add(studentCourseRepository.save(studentCoure));
-            }
-        }
-
-        StudentCourseDto responseDto = new StudentCourseDto();
-        responseDto.setStudentDtoList(studentCourseDto.getStudentDtoList());
-        responseDto.setCourseDtoList(studentCourseDto.getCourseDtoList());
-
-        apiResponse.setResult(responseDto);
-        apiResponse.setMessage(messageSource.getMessage("success.create", null, locale));
-        return apiResponse;
-    }
-
-    @Transactional
-    public ApiResponse<StudentDto> updateStudentAndCourses(UpdateStudentCourseDto dto, Locale locale) {
-        Student student = studentRepository.findById(dto.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-        student.setName(dto.getName());
-        student.setEmail(dto.getEmail());
-        student.setStatus(dto.getStatus());
-        studentRepository.save(student);
-
-        List<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId1(student.getId());
-
-        Set<Long> newCourseIds = new HashSet<>(dto.getCourseIds());
-
-        Set<Long> coursesToDeactivate = currentCourseIds.stream()
-                .filter(id -> !newCourseIds.contains(id))
-                .collect(Collectors.toSet());
-
-        if (!coursesToDeactivate.isEmpty()) {
-            studentCourseRepository.updateStatusByStudentIdAndCourseIds(student.getId(), coursesToDeactivate);
-        }
-
-        List<Course> courses = courseRepository.findAllByIds(dto.getCourseIds());
-
-        for (Course course : courses) {
-            if (course.getStatus() == 0) {
-                throw new AppException(ErrorCode.COURSE_CLOSE);
-            }
-        }
-
-        Set<StudentCoure> newStudentCourses = courses.stream()
-                .map(course -> {
-                    StudentCoure studentCourse = studentCourseRepository.findByStudentIdAndCourseId(student.getId(), course.getId())
-                            .orElseGet(() -> new StudentCoure());
-                    studentCourse.setStudent(student);
-                    studentCourse.setCourse(course);
-                    studentCourse.setStatus(dto.getStatus());
-                    return studentCourse;
-                })
-                .collect(Collectors.toSet());
-
-        studentCourseRepository.saveAll(newStudentCourses);
-
-        // Tạo phản hồi API
-        StudentDto updatedStudentDto = StudentMapper.INSTANCE.toDto(student);
-        ApiResponse<StudentDto> response = new ApiResponse<>();
-        response.setResult(updatedStudentDto);
-        response.setMessage(messageSource.getMessage("success.update", null, locale));
-
-        return response;
-    }
-
-    @Transactional
-    @Override
-    public ApiResponse<Void> deleteByStudentIdAndCourseId(Long studentId, Long courseId, Locale locale) {
-        boolean exists = studentCourseRepository.existsByStudentIdAndCourseId(studentId, courseId);
-
-        ApiResponse<Void> apiResponse = new ApiResponse<>();
-
-        if (exists) {
-            studentCourseRepository.deleteByStudentIdAndCourseId(studentId, courseId);
-            apiResponse.setMessage(messageSource.getMessage("success.deleteStudentCourse", null, locale));
-        } else {
-            apiResponse.setMessage(messageSource.getMessage("error.studentCourseNotFound", null, locale));
-        }
-
-        return apiResponse;
-    }
 
 
 
