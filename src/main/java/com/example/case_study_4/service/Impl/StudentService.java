@@ -32,116 +32,114 @@ public class StudentService implements IStudentService {
     private MessageSource messageSource;
 
     @Override
-    public ApiResponse<Page<StudentDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage) {
-        Pageable pageableRequest = PageRequest.of(currentPage, size); // Tạo Pageable mới với size và currentPage
+    public ApiResponse<Page<StudentDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage, Locale locale) {
+        Pageable pageableRequest = PageRequest.of(currentPage, size);
         Page<Student> studentPage = studentRepository.findAll(pageableRequest);
         Page<StudentDto> studentDtoPage = studentPage.map(StudentMapper.INSTANCE::toDto);
         ApiResponse<Page<StudentDto>> apiResponse = new ApiResponse<>();
 
-        if (studentDtoPage != null){
-            apiResponse.setMessage("Lấy danh sách học sinh thành công");
+        if (studentDtoPage != null && !studentDtoPage.isEmpty()) {
+            apiResponse.setMessage(messageSource.getMessage("success.getAllPageable", null, locale));
             apiResponse.setResult(studentDtoPage);
-        }else {
+        } else {
             throw new AppException(ErrorCode.LIST_STUDENT_NOT_FOUND);
         }
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<StudentDto> create(StudentDto studentDto) {
+    public ApiResponse<StudentDto> create(StudentDto studentDto, Locale locale) {
         Student student = StudentMapper.INSTANCE.toEntity(studentDto);
         student = studentRepository.save(student);
         StudentDto savedStudentDto = StudentMapper.INSTANCE.toDto(student);
         ApiResponse<StudentDto> response = new ApiResponse<>();
-    
-        response.setMessage("Created");
+
+        response.setMessage(messageSource.getMessage("success.create", null, locale));
         response.setResult(savedStudentDto);
 
         return response;
     }
 
     @Override
-    public ApiResponse<StudentDto> findById(Long id) {
-        Student student = studentRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+    public ApiResponse<StudentDto> findById(Long id, Locale locale) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
         StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
         ApiResponse<StudentDto> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("Lấy student thành công");
+        apiResponse.setMessage(messageSource.getMessage("success.findById", null, locale));
         apiResponse.setResult(studentDto);
 
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<StudentDto> update(Long id, StudentDto studentDto) {
-        Student student = studentRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-        student.setId(id);
-        student = StudentMapper.INSTANCE.toEntity(studentDto);
-        studentRepository.save(student);
+    public ApiResponse<StudentDto> update(Long id, StudentDto studentDto, Locale locale) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
 
-        StudentDto studentDto1 = StudentMapper.INSTANCE.toDto(student);
+        student.setName(studentDto.getName());
+        student.setEmail(studentDto.getEmail());
+        student.setStatus(studentDto.getStatus());
+        student = studentRepository.save(student);
+
+        StudentDto updatedStudentDto = StudentMapper.INSTANCE.toDto(student);
         ApiResponse<StudentDto> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("update thành công");
-        apiResponse.setResult(studentDto1);
+        apiResponse.setMessage(messageSource.getMessage("success.update", null, locale));
+        apiResponse.setResult(updatedStudentDto);
 
         return apiResponse;
     }
 
     @Override
-    public ApiResponse<Boolean> delete(Long id) {
+    public ApiResponse<Boolean> delete(Long id, Locale locale) {
         ApiResponse<Boolean> response = new ApiResponse<>();
         if (studentRepository.existsById(id)) {
             studentRepository.deleteById(id);
-            response.setMessage("Xóa thành công");
+            response.setMessage(messageSource.getMessage("success.delete", null, locale));
             response.setResult(true);
         } else {
-            response.setMessage("Không tìm thấy student");
-            response.setResult(false);
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
         }
         return response;
     }
 
-    public ApiResponse<StudentDto> deleteMem(Long id) {
-        ApiResponse apiResponse = new ApiResponse<>();
-        Student student = studentRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-        if (student.getStatus() == 1){
+    @Transactional
+    public ApiResponse<StudentDto> deleteMem(Long id, Locale locale) {
+        ApiResponse<StudentDto> apiResponse = new ApiResponse<>();
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+
+        if (student.getStatus() == 1) {
             student.setStatus(0);
-            student.setId(id);
             studentRepository.save(student);
             StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
-            if (studentDto != null){
-                apiResponse.setMessage("Xoa thành công");
-                apiResponse.setResult(studentDto);
-            }else {
-                throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
-            }
-        }else {
-            apiResponse.setMessage("Học sinh này không tồn tại");
+            apiResponse.setMessage(messageSource.getMessage("success.soft.delete", null, locale));
+            apiResponse.setResult(studentDto);
+        } else {
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
         }
         return apiResponse;
     }
 
-    public ApiResponse<StudentDto> open(Long id) {
-        ApiResponse apiResponse = new ApiResponse<>();
-        Student student = studentRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.STUDENT_NOT_FOUND));
-        if (student.getStatus() == 0){
+    @Transactional
+    public ApiResponse<StudentDto> open(Long id, Locale locale) {
+        ApiResponse<StudentDto> apiResponse = new ApiResponse<>();
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+
+        if (student.getStatus() == 0) {
             student.setStatus(1);
-            student.setId(id);
             studentRepository.save(student);
             StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
-            if (studentDto != null){
-                apiResponse.setMessage("Mở thành công");
-                apiResponse.setResult(studentDto);
-            }else {
-                throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
-            }
-        }else {
-            apiResponse.setMessage("Học sinh này không tồn tại");
+            apiResponse.setMessage(messageSource.getMessage("success.reopen", null, locale));
+            apiResponse.setResult(studentDto);
+        } else {
+            throw new AppException(ErrorCode.STUDENT_NOT_FOUND);
         }
 
         return apiResponse;
     }
 
-    //select 1-n
     @Transactional
     @Override
     public ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size, Locale locale) {
@@ -165,7 +163,7 @@ public class StudentService implements IStudentService {
     }
 
     @Transactional
-    public ApiResponse<Void> deleteStudent(Long studentId) {
+    public ApiResponse<Void> deleteStudent(Long studentId, Locale locale) {
         // Xóa các bản ghi liên quan trong student_coure
         studentRepository.deleteByStudentId(studentId);
 
@@ -173,11 +171,9 @@ public class StudentService implements IStudentService {
         studentRepository.deleteById(studentId);
 
         ApiResponse<Void> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("Xóa học sinh thành công");
+        apiResponse.setMessage(messageSource.getMessage("success.delete", null, locale));
         return apiResponse;
     }
-
-
 
 
 

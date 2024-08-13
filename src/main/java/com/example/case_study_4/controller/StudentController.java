@@ -23,33 +23,53 @@ public class StudentController {
     @Autowired
     private IStudentService service;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    private Locale getLocale() {
+        return request.getHeader("Accept-Language") != null ?
+                Locale.forLanguageTag(request.getHeader("Accept-Language")) : Locale.getDefault();
+    }
+
     @PostMapping()
     ApiResponse<StudentDto> create(@RequestBody @Valid StudentDto studentDto){
-        return service.create(studentDto);
+        Locale locale = getLocale();
+
+        return service.create(studentDto, locale);
     }
 
     @GetMapping("/findById/{id}")
     ApiResponse<StudentDto> findById(@PathVariable Long id){
-        return service.findById(id);
+        Locale locale = getLocale();
+
+        return service.findById(id, locale);
     }
 
     @PutMapping("/update/{id}")
     ApiResponse<StudentDto> update(@RequestBody @Valid StudentDto studentDto, @PathVariable Long id){
-        return service.update(id, studentDto);
+        Locale locale = getLocale();
+
+        return service.update(id, studentDto,locale);
     }
     @DeleteMapping("delete/{id}")
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
-        return service.delete(id);
+        Locale locale = getLocale();
+
+        return service.delete(id,locale);
     }
 
     @PostMapping("/xoa-mem/{id}")
     public ApiResponse<StudentDto> deleteMem(@PathVariable Long id){
-        return service.deleteMem(id);
+        Locale locale = getLocale();
+
+        return service.deleteMem(id,locale);
     }
 
     @PostMapping("/open/{id}")
     public ApiResponse<StudentDto> open(@PathVariable Long id){
-        return service.open(id);
+        Locale locale = getLocale();
+
+        return service.open(id, locale);
     }
 
     @GetMapping("/all")
@@ -63,7 +83,8 @@ public class StudentController {
 
     @DeleteMapping("/deleteStudent/{studentId}")
     public ApiResponse<Void> deleteStudent(@PathVariable Long studentId) {
-        return service.deleteStudent(studentId);
+        Locale locale = getLocale();
+        return service.deleteStudent(studentId, locale);
     }
 
 

@@ -11,9 +11,7 @@ import java.util.Locale;
 
 public interface IStudentCourseService {
     ApiResponse<Page<GetAllDto>> getAll(int page, int size, Locale locale);
-
     ApiResponse<Page<GetAllDto>> searchByStudentName(String name, int page, int size, Locale locale) ;
-
     ApiResponse<StudentCourseDto> createAll(StudentCourseDto studentCourseDto, Locale locale);
     ApiResponse<StudentDto> updateStudentAndCourses(UpdateStudentCourseDto dto, Locale locale);
 }

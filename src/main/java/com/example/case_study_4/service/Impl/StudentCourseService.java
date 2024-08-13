@@ -148,6 +148,7 @@ public class StudentCourseService implements IStudentCourseService {
         List<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId1(student.getId());
 
         Set<Long> newCourseIds = new HashSet<>(dto.getCourseIds());
+
         Set<Long> coursesToDeactivate = currentCourseIds.stream()
                 .filter(id -> !newCourseIds.contains(id))
                 .collect(Collectors.toSet());
@@ -157,6 +158,12 @@ public class StudentCourseService implements IStudentCourseService {
         }
 
         List<Course> courses = courseRepository.findAllByIds(dto.getCourseIds());
+
+        for (Course course : courses) {
+            if (course.getStatus() == 0) {
+                throw new AppException(ErrorCode.COURSE_CLOSE);
+            }
+        }
 
         Set<StudentCoure> newStudentCourses = courses.stream()
                 .map(course -> {
@@ -171,6 +178,7 @@ public class StudentCourseService implements IStudentCourseService {
 
         studentCourseRepository.saveAll(newStudentCourses);
 
+        // Tạo phản hồi API
         StudentDto updatedStudentDto = StudentMapper.INSTANCE.toDto(student);
         ApiResponse<StudentDto> response = new ApiResponse<>();
         response.setResult(updatedStudentDto);

@@ -12,7 +12,9 @@ public enum ErrorCode {
     STUDENT_EMAIL_EXISTS(1006, "error.studentEmailExists", HttpStatus.BAD_REQUEST),
     STUDENT_DISCONECT(1007, "error.studentDisconnect", HttpStatus.BAD_REQUEST),
     ALREADY_DELETED(1008, "error.alreadyDeleted", HttpStatus.BAD_REQUEST),
-    STUDENT_EXISTS_COURSE(1009, "error.existsCourse", HttpStatus.BAD_REQUEST);
+    STUDENT_EXISTS_COURSE(1009, "error.existsCourse", HttpStatus.BAD_REQUEST),
+    COURSE_CLOSE(1010, "error.courseClose", HttpStatus.NOT_FOUND);
+
 
     private final int code;
     private final String messageKey;

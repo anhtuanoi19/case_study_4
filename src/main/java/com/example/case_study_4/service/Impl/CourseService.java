@@ -8,9 +8,11 @@ import com.example.case_study_4.dto.request.StudentDto;
 import com.example.case_study_4.dto.response.ApiResponse;
 import com.example.case_study_4.entity.Course;
 import com.example.case_study_4.entity.Student;
+import com.example.case_study_4.entity.StudentCoure;
 import com.example.case_study_4.exception.AppException;
 import com.example.case_study_4.exception.ErrorCode;
 import com.example.case_study_4.repository.CourseRepository;
+import com.example.case_study_4.repository.StudentCourseRepository;
 import com.example.case_study_4.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -18,8 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService implements ICourseService {
@@ -28,6 +33,9 @@ public class CourseService implements ICourseService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private StudentCourseRepository studentCourseRepository;
 
     @Override
     public ApiResponse<Page<CourseDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage, Locale locale) {
@@ -101,20 +109,29 @@ public class CourseService implements ICourseService {
     }
 
     @Override
-    public ApiResponse<CourseDto> deleteMem(Long id, Locale locale) {
-        ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
-        Course course = courseRepository.findById(id)
+    @Transactional
+    public ApiResponse<Boolean> deleteMem(Long courseId, Locale locale) {
+        ApiResponse<Boolean> response = new ApiResponse<>();
+        Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
-        if (course.getStatus() == 1){
+
+        if (course.getId() == 1){
             course.setStatus(0);
             courseRepository.save(course);
-            CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
-            apiResponse.setMessage(messageSource.getMessage("success.soft.delete", null, locale));
-            apiResponse.setResult(courseDto);
-        } else {
+
+            List<StudentCoure> studentCourses = courseRepository.findStudentCourseByCourseId(courseId);
+
+            studentCourses.forEach(sc -> sc.setStatus(0));
+            studentCourseRepository.saveAll(studentCourses);
+
+            // Tạo phản hồi API
+            response.setMessage(messageSource.getMessage("success.softDeleteCourse", null, locale));
+            response.setResult(true);
+        }else {
             throw new AppException(ErrorCode.ALREADY_DELETED);
         }
-        return apiResponse;
+
+        return response;
     }
 
     @Override
@@ -131,6 +148,24 @@ public class CourseService implements ICourseService {
         } else {
             throw new AppException(ErrorCode.ALREADY_DELETED);
         }
+        return apiResponse;
+    }
+
+    @Override
+    public ApiResponse<Page<CourseDto>> findByTitle(String title, Locale locale, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Course> coursePage = courseRepository.searchByTitle(title, pageable);
+
+        Page<CourseDto> courseDtoPage = coursePage.map(course -> CourseMapper.INSTANCE.toDto(course));
+
+        ApiResponse<Page<CourseDto>> apiResponse = new ApiResponse<>();
+        if (coursePage.hasContent()) {
+            apiResponse.setMessage(messageSource.getMessage("success.searchCourses", null, locale));
+        } else {
+            apiResponse.setMessage(messageSource.getMessage("info.noCoursesFound", null, locale));
+        }
+        apiResponse.setResult(courseDtoPage);
+
         return apiResponse;
     }
 

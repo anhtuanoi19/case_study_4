@@ -1,6 +1,7 @@
 package com.example.case_study_4.controller;
 
 import com.example.case_study_4.dto.request.CourseDto;
+import com.example.case_study_4.dto.request.GetAllDto;
 import com.example.case_study_4.dto.request.StudentDto;
 import com.example.case_study_4.dto.response.ApiResponse;
 import com.example.case_study_4.repository.CourseRepository;
@@ -12,7 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -64,7 +67,7 @@ public class CourseController {
     }
 
     @PostMapping("/xoa-mem/{id}")
-    public ApiResponse<CourseDto> deleteMem(@PathVariable Long id) {
+    public ApiResponse<Boolean> deleteMem(@PathVariable Long id) {
         Locale locale = getLocale();
         return service.deleteMem(id, locale);
     }
@@ -73,5 +76,14 @@ public class CourseController {
     public ApiResponse<CourseDto> open(@PathVariable Long id) {
         Locale locale = getLocale();
         return service.open(id, locale);
+    }
+
+    @PostMapping("/search")
+    public ApiResponse<Page<CourseDto>> search(
+            @RequestParam(required = false) String title,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Locale locale = getLocale();
+        return service.findByTitle(title, locale, page, size);
     }
 }

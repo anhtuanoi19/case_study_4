@@ -11,14 +11,14 @@ import java.util.UUID;
 
 public interface IStudentService {
 
-    ApiResponse<Page<StudentDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage);
-    ApiResponse<StudentDto> create(StudentDto studentDto);
-    ApiResponse<StudentDto> findById(Long id);
-    ApiResponse<StudentDto> update(Long id, StudentDto studentDto);
-    ApiResponse<Boolean> delete(Long id);
-    ApiResponse<StudentDto> open(Long id);
-    ApiResponse<StudentDto> deleteMem(Long id);
+    ApiResponse<Page<StudentDto>> getAllPageable(Pageable pageable, Integer size, Integer currentPage, Locale locale);
+    ApiResponse<StudentDto> create(StudentDto studentDto, Locale locale);
+    ApiResponse<StudentDto> findById(Long id, Locale locale);
+    ApiResponse<StudentDto> update(Long id, StudentDto studentDto, Locale locale);
+    ApiResponse<Boolean> delete(Long id, Locale locale);
+    ApiResponse<StudentDto> open(Long id, Locale locale);
+    ApiResponse<StudentDto> deleteMem(Long id, Locale locale);
     ApiResponse<Page<StudentDto>> getAllStudentsWithCourses(int page, int size, Locale locale);
-    ApiResponse<Void> deleteStudent(Long studentId);
+    ApiResponse<Void> deleteStudent(Long studentId, Locale locale);
 
 }
