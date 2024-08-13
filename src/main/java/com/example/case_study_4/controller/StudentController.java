@@ -29,6 +29,12 @@ public class StudentController {
         return service.search(name, pageable);
     }
 
+    @GetMapping()
+    public ApiResponse<Page<StudentDto>> getAll(
+            Pageable pageable) {
+        return service.getAllStudents(pageable);
+    }
+
     @GetMapping("/findById/{id}")
     ApiResponse<StudentDto> findById(@PathVariable Long id){
 

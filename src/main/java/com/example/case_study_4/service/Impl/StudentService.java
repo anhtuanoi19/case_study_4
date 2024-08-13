@@ -337,6 +337,25 @@ public class StudentService implements IStudentService {
         return response;
     }
 
+    public ApiResponse<Page<StudentDto>> getAllStudents(Pageable pageable) {
+        Page<Student> studentPage = studentRepository.findAllWithCourses(pageable);
+
+        Page<StudentDto> studentDtoPage = studentPage.map(student -> {
+            StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
+            List<CourseDto> courseDtos = student.getStudentCourses().stream()
+                    .map(sc -> CourseMapper.INSTANCE.toDto(sc.getCourse()))
+                    .collect(Collectors.toList());
+            studentDto.setCourses(courseDtos);
+            return studentDto;
+        });
+
+        ApiResponse<Page<StudentDto>> response = new ApiResponse<>();
+        response.setResult(studentDtoPage);
+        response.setMessage("Successfully fetched students.");
+
+        return response;
+    }
+
 }
 
 

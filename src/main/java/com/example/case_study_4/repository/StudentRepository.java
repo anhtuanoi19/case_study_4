@@ -17,8 +17,6 @@ import java.util.Set;
 public interface StudentRepository extends JpaRepository<Student, Long> {
     Page<Student> findAll(Pageable pageable);
 
-    @Query("SELECT s FROM Student s LEFT JOIN FETCH s.studentCourses sc LEFT JOIN FETCH sc.course")
-    Page<Student> findAllWithCourses(Pageable pageable);
     boolean existsByEmail(String email);
 
     @Modifying
@@ -29,4 +27,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Query("SELECT DISTINCT s FROM Student s LEFT JOIN FETCH s.studentCourses sc LEFT JOIN FETCH sc.course WHERE (:name IS NULL OR s.name LIKE %:name%)")
     Page<Student> findByNameContaining(@Param("name") String name, Pageable pageable);
 
+    @Query("SELECT DISTINCT s FROM Student s LEFT JOIN FETCH s.studentCourses sc LEFT JOIN FETCH sc.course")
+    Page<Student> findAllWithCourses(Pageable pageable);
 }

@@ -20,6 +20,5 @@ public interface IStudentService {
     ApiResponse<Void> deleteByStudentIdAndCourseId(Long studentId, Long courseId);
     ApiResponse<StudentDto> updateStudentAndCourses(UpdateStudentCourseDto dto);
     ApiResponse<Page<StudentDto>> search(String name, Pageable pageable);
-
-
+    ApiResponse<Page<StudentDto>> getAllStudents(Pageable pageable);
 }
