@@ -60,5 +60,12 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
         @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
         List<Long> findCourseIdsByStudentId1(@Param("studentId") Long studentId);
 
+        @Modifying
+        @Transactional
+        @Query("DELETE FROM StudentCoure sc WHERE sc.student.id = :studentId AND sc.course.id = :courseId")
+        void deleteByStudentIdAndCourseId(Long studentId, Long courseId);
+        @Query("SELECT COUNT(sc) > 0 FROM StudentCoure sc WHERE sc.student.id = :studentId AND sc.course.id = :courseId")
+        boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
 }
+
 

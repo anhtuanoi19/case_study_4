@@ -86,4 +86,5 @@ public class CourseController {
         Locale locale = getLocale();
         return service.findByTitle(title, locale, page, size);
     }
+
 }

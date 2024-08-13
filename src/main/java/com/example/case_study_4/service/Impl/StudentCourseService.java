@@ -187,6 +187,23 @@ public class StudentCourseService implements IStudentCourseService {
         return response;
     }
 
+    @Transactional
+    @Override
+    public ApiResponse<Void> deleteByStudentIdAndCourseId(Long studentId, Long courseId, Locale locale) {
+        boolean exists = studentCourseRepository.existsByStudentIdAndCourseId(studentId, courseId);
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+
+        if (exists) {
+            studentCourseRepository.deleteByStudentIdAndCourseId(studentId, courseId);
+            apiResponse.setMessage(messageSource.getMessage("success.deleteStudentCourse", null, locale));
+        } else {
+            apiResponse.setMessage(messageSource.getMessage("error.studentCourseNotFound", null, locale));
+        }
+
+        return apiResponse;
+    }
+
 
 
 }

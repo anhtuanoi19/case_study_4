@@ -68,4 +68,15 @@ public class StudentCourseController {
         return studentCourseService.updateStudentAndCourses(updateStudentCourseDto, locale);
     }
 
+    @DeleteMapping("/delete")
+    public ApiResponse<Void> deleteStudentCourse(
+            @RequestParam Long studentId,
+            @RequestParam Long courseId,
+            Locale locale) {
+
+        ApiResponse<Void> response = studentCourseService.deleteByStudentIdAndCourseId(studentId, courseId, locale);
+
+        return response;
+    }
+
 }
