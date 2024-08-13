@@ -28,8 +28,12 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
                 " JOIN student s ON sc.student_id = s.id " +
                 " JOIN course c ON sc.course_id = c.id " +
                 " GROUP BY s.id, s.name, s.email",
+                countQuery = "SELECT COUNT(DISTINCT s.id) FROM student_coure sc " +
+                        " JOIN student s ON sc.student_id = s.id " +
+                        " JOIN course c ON sc.course_id = c.id",
                 nativeQuery = true)
         Page<Object[]> getAllByConCat(Pageable pageable);
+
 
         @Query(value = "SELECT s.name AS studentName, " +
                 "       s.email AS studentEmail, " +
@@ -39,6 +43,10 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
                 " JOIN course c ON sc.course_id = c.id " +
                 " WHERE (:name IS NULL OR s.name LIKE %:name%) " +
                 " GROUP BY s.id, s.name, s.email",
+                countQuery = "SELECT COUNT(DISTINCT s.id) " +
+                        " FROM student_coure sc " +
+                        " JOIN student s ON sc.student_id = s.id " +
+                        " JOIN course c ON sc.course_id = c.id",
                 nativeQuery = true)
         Page<Object[]> searchByStudentName(String name, Pageable pageable);
 

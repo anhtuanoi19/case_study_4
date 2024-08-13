@@ -13,4 +13,10 @@ public class ApiResponse<T> {
     private String message;
     private T result;
     private String url;
+
+    public ApiResponse(int code, String message, T result) {
+        this.code = code;
+        this.message = message;
+        this.result = result;
+    }
 }

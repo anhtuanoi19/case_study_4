@@ -15,6 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/student")
@@ -29,9 +30,13 @@ public class StudentController {
         return service.search(name, pageable);
     }
 
-    @GetMapping()
-    public ApiResponse<Page<StudentDto>> getAll(
-            Pageable pageable) {
+    @GetMapping
+    public ApiResponse<Page<StudentDto>> getAll(@RequestParam("page") Optional<Integer> page,
+                                                @RequestParam("size") Optional<Integer> size) {
+        Pageable pageable = PageRequest.of(
+                page.orElse(0),
+                size.orElse(10)
+        );
         return service.getAllStudents(pageable);
     }
 

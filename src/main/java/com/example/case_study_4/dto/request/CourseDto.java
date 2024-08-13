@@ -15,8 +15,8 @@ import java.util.List;
 public class CourseDto {
 
     private Long id;
-    @NotBlank(message = "Tiêu đề không được để trống")
-    @Size(min = 3, max = 100, message = "Tiêu đề phải từ 3 đến 100 ký tự")
+    @NotBlank(message = "titleNotBlank")
+    @Size(min = 3, max = 50, message = "checkSize")
     private String title;
     @Size(max = 255, message = "error.size")
     private String description;
