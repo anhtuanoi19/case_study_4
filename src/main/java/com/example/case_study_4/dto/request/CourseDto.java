@@ -16,7 +16,7 @@ public class CourseDto {
 
     private Long id;
     @NotBlank(message = "titleNotBlank")
-    @Size(min = 3, max = 50, message = "checkSize")
+    @Size(min = 3, max = 50, message = "checkSizeTitle")
     private String title;
     @Size(max = 255, message = "error.size")
     private String description;

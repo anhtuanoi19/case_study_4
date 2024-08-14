@@ -26,8 +26,8 @@ public class CourseController {
 
     @GetMapping()
     public ApiResponse<Page<CourseDto>> getAllStudentsPageable(
-            @RequestParam(value = "size", defaultValue = "5") Integer size,
-            @RequestParam(value = "page", defaultValue = "0") Integer page) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
 
         Pageable pageable = PageRequest.of(page, size);
         return service.getAllPageable(pageable, size, page);
@@ -66,8 +66,8 @@ public class CourseController {
     @PostMapping("/search")
     public ApiResponse<Page<CourseDto>> search(
             @RequestParam(required = false) String title,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         return service.findByTitle(title, page, size);
     }
 
