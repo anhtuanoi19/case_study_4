@@ -62,13 +62,15 @@ public class StudentCourseService implements IStudentCourseService {
     @Override
     public ApiResponse<Page<GetAllDto>> searchByStudentName(String name, Pageable pageable) {
         Locale locale = LocaleContextHolder.getLocale();
-
-
         ApiResponse<Page<GetAllDto>> apiResponse = new ApiResponse<>();
+
+        // Thực hiện truy vấn với phân trang
         Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
 
         if (resultsPage.hasContent()) {
             List<GetAllDto> dtoList = new ArrayList<>();
+
+            // Chuyển đổi kết quả từ Object[] sang GetAllDto
             for (Object[] result : resultsPage.getContent()) {
                 String studentName = (String) result[0];
                 String studentEmail = (String) result[1];
@@ -77,17 +79,19 @@ public class StudentCourseService implements IStudentCourseService {
                 dtoList.add(new GetAllDto(studentName, studentEmail, courseTitles));
             }
 
+            // Tạo Page<GetAllDto> với số lượng phần tử tổng cộng từ kết quả truy vấn
             Page<GetAllDto> dtoPage = new PageImpl<>(dtoList, pageable, resultsPage.getTotalElements());
 
+            // Đặt kết quả vào ApiResponse
             apiResponse.setResult(dtoPage);
             apiResponse.setMessage(messageSource.getMessage("success.search", null, locale));
         } else {
+            // Trường hợp không tìm thấy dữ liệu
             apiResponse.setMessage(messageSource.getMessage("error.student.not.found", null, locale));
         }
 
         return apiResponse;
     }
-
 
 
 

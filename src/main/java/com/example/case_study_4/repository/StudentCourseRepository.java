@@ -46,7 +46,8 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
                 countQuery = "SELECT COUNT(DISTINCT s.id) " +
                         " FROM student_coure sc " +
                         " JOIN student s ON sc.student_id = s.id " +
-                        " JOIN course c ON sc.course_id = c.id",
+                        " JOIN course c ON sc.course_id = c.id " +
+                        " WHERE (:name IS NULL OR s.name LIKE %:name%)",
                 nativeQuery = true)
         Page<Object[]> searchByStudentName(String name, Pageable pageable);
 
