@@ -26,17 +26,17 @@ public class StudentController {
     @GetMapping("/search")
     public ApiResponse<Page<StudentDto>> searchStudents(
             @RequestParam(value = "name", required = false) String name,
-            Pageable pageable) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        Pageable pageable = PageRequest.of(page, size );
         return service.search(name, pageable);
     }
 
     @GetMapping
-    public ApiResponse<Page<StudentDto>> getAll(@RequestParam("page") Optional<Integer> page,
-                                                @RequestParam("size") Optional<Integer> size) {
-        Pageable pageable = PageRequest.of(
-                page.orElse(0),
-                size.orElse(10)
-        );
+    public ApiResponse<Page<StudentDto>> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+                                                @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+
+        Pageable pageable = PageRequest.of(page, size );
         return service.getAllStudents(pageable);
     }
 
