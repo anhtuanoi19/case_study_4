@@ -90,10 +90,19 @@ public class CourseService implements ICourseService {
         Locale locale = LocaleContextHolder.getLocale();
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.STUDENT_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
         course.setId(id);
         course = CourseMapper.INSTANCE.toEntity(courseDto);
-        courseRepository.save(course);
+        if (course.getStatus() == 0){
+            courseRepository.save(course);
+
+            List<StudentCoure> studentCourses = courseRepository.findStudentCourseByCourseId(course.getId());
+
+            studentCourses.forEach(sc -> sc.setStatus(0));
+            studentCourseRepository.saveAll(studentCourses);
+        }else {
+            courseRepository.save(course);
+        }
 
         CourseDto courseDto1 = CourseMapper.INSTANCE.toDto(course);
         ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
@@ -128,7 +137,7 @@ public class CourseService implements ICourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
 
-        if (course.getId() == 1){
+        if (course.getStatus() == 1){
             course.setStatus(0);
             courseRepository.save(course);
 
