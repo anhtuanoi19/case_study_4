@@ -64,6 +64,16 @@ public class StudentCourseService implements IStudentCourseService {
         Locale locale = LocaleContextHolder.getLocale();
         ApiResponse<Page<GetAllDto>> apiResponse = new ApiResponse<>();
 
+        // Kiểm tra nếu tên không phải là chữ cái (chỉ cho phép chữ cái và có thể bao gồm khoảng trắng)
+        if (name != null && !name.matches("^[a-zA-Z\\s]*$")) {
+            throw new AppException(ErrorCode.INVALID_NAME);
+        }
+
+        // Kiểm tra nếu tên quá dài
+        if (name != null && name.length() > 50) {
+            throw new AppException(ErrorCode.NAME_TOO_LONG);
+        }
+
         // Thực hiện truy vấn với phân trang
         Page<Object[]> resultsPage = studentCourseRepository.searchByStudentName(name, pageable);
 

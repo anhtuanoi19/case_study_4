@@ -35,7 +35,7 @@ public class StudentCourseController {
 
     @GetMapping
     public ApiResponse<Page<GetAllDto>> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
-                                               @RequestParam(value = "size", required = false, defaultValue = "10") Integer size)  {
+                                               @RequestParam(value = "size", required = false, defaultValue = "5") Integer size)  {
 
         Pageable pageable = PageRequest.of(page, size);
         return studentCourseService.getAll(pageable);

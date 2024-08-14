@@ -68,6 +68,12 @@ public class StudentService implements IStudentService {
         if (student.getStatus() == 1) {
             student.setStatus(0);
             studentRepository.save(student);
+
+            List<StudentCoure> studentCourses = studentRepository.findStudentByStudentId(student.getId());
+            studentCourses.forEach(sc -> sc.setStatus(0));
+
+            studentCourseRepository.saveAll(studentCourses);
+
             StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
             apiResponse.setMessage(messageSource.getMessage("success.soft.delete", null, locale));
             apiResponse.setResult(studentDto);
@@ -88,6 +94,10 @@ public class StudentService implements IStudentService {
         if (student.getStatus() == 0) {
             student.setStatus(1);
             studentRepository.save(student);
+            List<StudentCoure> studentCourses = studentRepository.findStudentByStudentId(student.getId());
+            studentCourses.forEach(sc -> sc.setStatus(1));
+
+            studentCourseRepository.saveAll(studentCourses);
             StudentDto studentDto = StudentMapper.INSTANCE.toDto(student);
             apiResponse.setMessage(messageSource.getMessage("success.reopen", null, locale));
             apiResponse.setResult(studentDto);
@@ -219,7 +229,16 @@ public class StudentService implements IStudentService {
         student.setName(dto.getName());
         student.setEmail(dto.getEmail());
         student.setStatus(dto.getStatus());
-        studentRepository.save(student);
+        if (student.getStatus() == 0){
+            studentRepository.save(student);
+
+            List<StudentCoure> studentCourses = studentRepository.findStudentByStudentId(student.getId());
+            studentCourses.forEach(sc -> sc.setStatus(0));
+
+            studentCourseRepository.saveAll(studentCourses);
+        }else {
+            studentRepository.save(student);
+        }
 
         List<Long> currentCourseIds = studentCourseRepository.findCourseIdsByStudentId1(student.getId());
 

@@ -19,7 +19,6 @@ import java.util.Set;
 
 @Repository
 public interface StudentCourseRepository extends JpaRepository<StudentCoure, Long> {
-        Optional<StudentCoure> findByStudentAndCourse(Student student, Course course);
 
         @Query(value = "SELECT s.name AS studentName, " +
                 "       s.email AS studentEmail, " +
@@ -61,7 +60,6 @@ public interface StudentCourseRepository extends JpaRepository<StudentCoure, Lon
 
         @Query("SELECT sc.course.id FROM StudentCoure sc WHERE sc.student.id = :studentId")
         List<Long> findCourseIdsByStudentId1(@Param("studentId") Long studentId);
-
         @Modifying
         @Transactional
         @Query("DELETE FROM StudentCoure sc WHERE sc.student.id = :studentId AND sc.course.id = :courseId")

@@ -1,6 +1,7 @@
 package com.example.case_study_4.repository;
 
 import com.example.case_study_4.entity.Student;
+import com.example.case_study_4.entity.StudentCoure;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,9 +17,7 @@ import java.util.Set;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
     Page<Student> findAll(Pageable pageable);
-
     boolean existsByEmail(String email);
-
     @Modifying
     @Transactional
     @Query("DELETE FROM StudentCoure sc WHERE sc.student.id = :studentId")
@@ -29,4 +28,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Query("SELECT DISTINCT s FROM Student s LEFT JOIN FETCH s.studentCourses sc LEFT JOIN FETCH sc.course")
     Page<Student> findAllWithCourses(Pageable pageable);
+
+    @Query("SELECT sc FROM StudentCoure sc WHERE sc.student.id = :studentId")
+    List<StudentCoure> findStudentByStudentId(@Param("studentId") Long studentId);
 }
