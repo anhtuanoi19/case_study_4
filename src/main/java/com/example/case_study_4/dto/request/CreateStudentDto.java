@@ -15,7 +15,7 @@ import java.util.List;
 public class CreateStudentDto {
     private Long id;
     @NotBlank(message = "nameNotBlank")
-    @Size(min = 3, max = 50, message = "checkSize")
+    @Size(min = 3, max = 50, message = "checkSizeName")
     private String name;
 
     @NotBlank(message = "emailNotBlank")

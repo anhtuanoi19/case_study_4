@@ -127,11 +127,6 @@ public class StudentService implements IStudentService {
         if (student.getName() != null && !student.getName().matches("^[a-zA-Z\\s]*$")) {
             throw new AppException(ErrorCode.INVALID_NAME);
         }
-
-        // Kiểm tra nếu tên quá dài
-        if (student.getName() != null && student.getName().length() > 50) {
-            throw new AppException(ErrorCode.NAME_TOO_LONG);
-        }
         student = studentRepository.save(student);
 
         // Kiểm tra nếu danh sách khóa học không có thì chỉ trả về sinh viên đã tạo
@@ -221,10 +216,6 @@ public class StudentService implements IStudentService {
             throw new AppException(ErrorCode.INVALID_NAME);
         }
 
-        // Kiểm tra nếu tên quá dài
-        if (dto.getName() != null && dto.getName().length() > 50) {
-            throw new AppException(ErrorCode.NAME_TOO_LONG);
-        }
         student.setName(dto.getName());
         student.setEmail(dto.getEmail());
         student.setStatus(dto.getStatus());

@@ -12,7 +12,7 @@ public class UpdateStudentCourseDto {
     @Min(value = 1, message = "idmin")
     private Long id;
     @NotBlank(message = "nameNotBlank")
-    @Size(min = 3, max = 50, message = "checkSize")
+    @Size(min = 3, max = 50, message = "checkSizeName")
     private String name;
     @NotBlank(message = "emailNotBlank")
     @Email(message = "emailExists")
