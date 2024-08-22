@@ -79,7 +79,7 @@ public class CourseService implements ICourseService {
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
         CourseDto courseDto = CourseMapper.INSTANCE.toDto(course);
         ApiResponse<CourseDto> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage(messageSource.getMessage("success.getCourse", null, locale));
+        apiResponse.setMessage(messageSource.getMessage("success.findById", null, locale));
         apiResponse.setResult(courseDto);
 
         return apiResponse;

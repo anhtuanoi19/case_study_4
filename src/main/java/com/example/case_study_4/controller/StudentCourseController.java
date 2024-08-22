@@ -33,7 +33,7 @@ public class StudentCourseController {
 //        return studentCourseService.getAll(pageable);
 //    }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ApiResponse<Page<GetAllDto>> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
                                                @RequestParam(value = "size", required = false, defaultValue = "5") Integer size)  {
 

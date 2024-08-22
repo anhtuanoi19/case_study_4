@@ -24,7 +24,7 @@ public class CourseController {
     @Autowired
     private ICourseService service;
 
-    @GetMapping()
+    @GetMapping("/getAll")
     public ApiResponse<Page<CourseDto>> getAllStudentsPageable(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
@@ -33,7 +33,7 @@ public class CourseController {
         return service.getAllPageable(pageable, size, page);
     }
 
-    @PostMapping()
+    @PostMapping("/create")
     public ApiResponse<CourseDto> create(@RequestBody @Valid CourseDto courseDto) {
         return service.create(courseDto);
     }

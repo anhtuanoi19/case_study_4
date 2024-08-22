@@ -16,6 +16,7 @@ import java.util.List;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
+    @Query("SELECT c FROM Course c ORDER BY c.id DESC")
     Page<Course> findAll(Pageable pageable);
 
     @Modifying
